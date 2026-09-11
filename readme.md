@@ -38,7 +38,9 @@ npm i -g sharp
 
 sharp 不是必须的，但是在运行过程中会出现报错。参考：https://nextjs.org/docs/messages/sharp-missing-in-production
 
-在你的服务器家目录，新建 `yohaku` 的目录，然后新建 `.env` 填写你的变量。
+在 Workflow 中修改 basedir 到你的服务器自定目录中，然后在其中新建 `.env` 填写你的变量
+
+basedir 已经改为 /opt/servers/blog/yohaku-build；上游默认为 $HOME/yohaku
 
 ```
 # Env from your private Yohaku/Shiroi repo .env.template
