@@ -99,6 +99,8 @@ x-mx-env: &mx-env
   ALLOWED_ORIGIN: "${域名}"
   ENCRYPT_ENABLE: true
   ENCRYPT_KEY: "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  THROTTLE_TTL: 10
+  THROTTLE_LIMIT: 1000
 
 services:
   app:
@@ -344,6 +346,8 @@ pm2 list
 
 ### 5.2 环境相关
 
+#### 5.2.1 预渲染阶段 502
+
 `next build` 预渲染阶段 502
 
 * 本地/私服 mx-space 后端未启动
@@ -351,15 +355,36 @@ pm2 list
 
 ---
 
-构建期`/aggregate?...` 404
+#### 5.2.2 聚合接口 404
+
+构建期 `/aggregate?...` 404
 
 * `NEXT_PUBLIC_API_URL` 用了 `/api/v2`，实际后端 `API_VERSION=3`
 * api 版本的配置需全线统一
 
-确认版本无误仍然 404，但`/aggregate/site` 正常
+确认版本无误仍然 404，但 `/aggregate/site` 正常
 
 * 解析详见[5.3.2 聚合接口404](#5.3.2 聚合接口404)
 * 需要在后台至少发布一篇记录（Note）
+
+---
+
+#### 5.2.2 聚合接口 403
+
+构建期 `/aggregate?...` 403 和 200交替出现，日志表现为:
+
+```shell
+[Response/Server]: ***/aggregate?theme=yohaku%7Cshiro&lang=zh 403
+[Response/Server]: ***/aggregate?theme=yohaku%7Cshiro&lang=en 403
+[Response/Server]: ***/aggregate?theme=yohaku%7Cshiro&lang=ko 200
+[Response/Server]: ***/aggregate?theme=yohaku%7Cshiro&lang=ja 200
+Error: [GET] "***/aggregate?theme=yohaku%7Cshiro&lang=en": 403 Forbidden
+    at async j (src/app/[locale]/api.tsx:42:16)
+    at async d (src/lib/seo/metadata.server.ts:18:2***)
+.........................
+```
+
+源站经过 `Cloudflare Tunnel` 时，`Bot Fight` 模式默认开启，在并发请求频率过高时容易误触；且free版本不支持精细化定义规则，只能关闭这个模式 (在 `CF面板 -> 工作域名 -> 安全性 -> 设置 -> 自动程序流量` 中)，由其它的默认规则兜底基础DDOS防护。![cloudflare-bot-fight](./images/cloudflare-bot-fight.png)
 
 ---
 
