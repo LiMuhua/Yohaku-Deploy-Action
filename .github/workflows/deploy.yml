@@ -299,6 +299,11 @@ jobs:
           rm -rf "$workdir/${{ env.STANDALONE_SUBPATH }}/.next/cache"
           ln -sf "$basedir/.cache" "$workdir/${{ env.STANDALONE_SUBPATH }}/.next/cache"
           cd "$basedir"
+          if [ ! -f "$basedir/.env" ]; then
+            echo "缺少运行环境配置: $basedir/.env" >&2
+          exit 1
+          fi
+          set -a; source "$basedir/.env"; set +a
           if pm2 describe Yohaku >/dev/null 2>&1; then
             pm2 reload ecosystem.config.js --update-env
           else
