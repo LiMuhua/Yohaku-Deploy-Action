@@ -6,8 +6,7 @@
 
 ## 目标
 
-- 利用 GitHub 去构建一个通用产物，不受构建时的环境变量影响。（后者你可以通过 [一次构建多处部署 - Next.js Runtime Env
-  ](https://innei.in/posts/tech/nextjs-runtime-env-and-build-once-deploy-many) 这篇文章了解更多）
+- 利用 GitHub 去构建一个通用产物，不受构建时的环境变量影响。（后者你可以通过 [一次构建多处部署 - Next.js Runtime Env](https://innei.in/posts/tech/nextjs-runtime-env-and-build-once-deploy-many) 这篇文章了解更多）
 - 如何推送构建产物到远程服务器
 - 如何跨源代码仓库外运行构建的工作流（这个需求是因为对于闭源仓库，GitHub CI 的时长和其他都有限制；另一个，这样工作流配置仓库可以开源，而源代码仓库可以闭源）
 - 如何实现回滚（可以不那么方便但是可用）
@@ -31,7 +30,7 @@
 
 然后我们，编写工作流配置。
 
-```yaml {19-20,46}
+```yaml
 name: Build and Deploy
 
 on:
@@ -116,7 +115,7 @@ jobs:
 
 由于上面的方式并不安全，所以我们这里使用 CI cache 去实现相同的功能。
 
-```yaml {4-9,25-31} expand
+```yaml
 jobs:
   build:
     # ...
@@ -145,7 +144,7 @@ jobs:
 
 上面完成了产物的构建，接下来写部署到服务器的流程。
 
-```yaml {17-62} expand
+```yaml
 jobs:
   deploy:
     name: Deploy artifact
@@ -228,7 +227,7 @@ ln -sf $workdir/standalone/server.js $basedir/server.js
 
 而 `ecosystem.config.js` 是这样的。
 
-```js {5}
+```js
 module.exports = {
   apps: [
     {
@@ -259,7 +258,7 @@ module.exports = {
 
 现在我们的目录下存在很多个数字开头的构建产物。我们可以通过脚本去完成切换。
 
-```sh filename="rollback.sh"
+```sh
 #!/bin/bash
 
 # 用于存放数字文件夹的数组
@@ -340,7 +339,7 @@ lrwxrwxrwx 1 innei innei   41 May  2 13:59 server.js -> /home/innei/shiro/56/sta
 
 在源码仓库中，增加一个新的工作流。
 
-```yaml {19-25} expand
+```yaml
 name: Trigger Target Workflow
 
 on:
@@ -372,7 +371,7 @@ jobs:
 
 然后需要修改被调用方的工作流配置：
 
-```yaml {6-7}
+```yaml
 on:
   push:
     branches:
@@ -400,11 +399,11 @@ permissions: write-all
 
 我们可以用文件的方式记录上次的 commit hash（你也可以用 artifact，至于为什么我使用文件请看下节的内容）。
 
-我们把每次构建完成的 commit hash 保存在当前仓库下的 `build_hash` 文件下。
+我们把每次构建完成的 commit hash 保存在当前仓库下的 `.github/deploy_build_hash` 文件下。
 
-这里我们需要好几个流程去做这个事，首先读取当前仓库下的 `build_hash` 并保存在 `GITHUB_OUTPUT` 中供后续的流程读取。
+这里我们需要好几个流程去做这个事，首先读取当前仓库下的 `.github/deploy_build_hash` 并保存在 `GITHUB_OUTPUT` 中供后续的流程读取。
 
-然后下一个流程，检出源码仓库，读取源码仓库的 commit hash，和 `build_hash` 比对，输出一个 `boolean` 值，同样保存在 `GITHUB_OUTPUT` 中。
+然后下一个流程，检出源码仓库，读取源码仓库的 commit hash，和 `.github/deploy_build_hash` 比对，输出一个 `boolean` 值，同样保存在 `GITHUB_OUTPUT` 中。
 
 下一个流程，利用 `if` 直接判断是否应该退出整个流程（因为后续的流程都依赖这个，所以等于全部退出了）。
 
@@ -414,7 +413,7 @@ permissions: write-all
 
 参考配置如下：
 
-```yaml {8,12,66,88-103,18} expand
+```yaml
 name: Build and Deploy
 
 on:
@@ -425,7 +424,7 @@ on:
 permissions: write-all
 
 env:
-  HASH_FILE: build_hash
+  HASH_FILE: .github/deploy_build_hash
 
 jobs:
   prepare:
@@ -523,7 +522,7 @@ jobs:
 
 为了能让这个工作流定时的去跑，可以使用 `schedule`:
 
-```yaml {7-8}
+```yaml
 name: Build and Deploy
 
 on:
@@ -541,6 +540,4 @@ on:
 
 完事了，以上就是全部的内容了。
 
-完整的配置在这里：
-
-https://github.com/innei-dev/yohaku-deploy-action
+完整的配置在这里：https://github.com/innei-dev/yohaku-deploy-action
