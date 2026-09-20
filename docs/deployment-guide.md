@@ -1,6 +1,6 @@
 # Yohaku 全流程部署实践记录
 
-> 本文档是 [readme.md](../readme.md) 和 [post-guide.md](../deployment-) 的补充说明；
+> 本文档是 [readme.md](../readme.md) 和 [post-guide.md](./post-guide.md) 的补充说明；
 > 聚焦于「本地用 `act` 调试 → 排障 → 最终跑通完整部署链路」的实际部署过程。
 > 包含整体架构图、时序图、踩过的坑与修复方式、以及 mx-space 后端配套注意事项。
 
@@ -26,7 +26,7 @@
 
 工作流文件：[.github/workflows/deploy.yml](./.github/workflows/deploy.yml)。
 
-本地调试参见：[本地调试 Workflow](../readme.md#本地调试 Workflow)。
+本地调试参见：[本地调试 Workflow](../readme.md#本地调试-Workflow)。
 
 5 个 Job 依次执行，任一失败下游即中止：
 

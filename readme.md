@@ -108,7 +108,7 @@ Fork 此项目，然后你需要填写下面的信息。
 | `HASH_FILE`          | `.github/deploy_build_hash`                                                                                                                             | 当前仓库中的构建哈希文件           | 可选；使用仓库相对路径。                                                               |
 | `BASE_DIR`           | `$HOME/yohaku`                       |服务器上的部署目录 | 可选；建议设置为独立的绝对路径，运行时环境文件须放在`$BASE_DIR/.env`；已有部署请沿用原目录。 |
 
-### CI 构建配置
+### CI构建配置
 
 | 变量                      | 作用                                      | 说明                                                                                                                                                                                                                                      |
 | --------------------------- | ------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -180,7 +180,8 @@ Linux containers 模式。
 推荐创建 fine-grained personal access token：
 
 1. 将 Resource owner 设为源码仓库所属的用户或组织。
-2. 在 Repository access 中选择 `SOURCE_REPO` 对应的仓库；不需要选择本工作流仓库。
+2. 在 Repository access 中选择 `SOURCE_REPO` 对应的仓库；
+   如果需要在本地调试工作流，此Token同时要拥有本工作流仓库的访问权限。
 3. 将 Repository permissions → Contents 设为 **Read-only**。
 
 ![github-fine-grained-token](./docs/images/github-fine-grained-token.png)
@@ -206,9 +207,10 @@ pm2 startup
 pm2 save
 ```
 
-如果区分了 SSH 部署用户，应确保 PM2 应用始终以该部署用户身份管理；详见[删除构建记录失败](./docs/deployment-guide.md#5.1.4 删除构建记录失败)。
+如果区分了 SSH 部署用户，应确保 PM2 应用始终以该部署用户身份管理；详见[删除构建记录失败](./docs/deployment-guide.md#514-删除构建记录失败)。
 
 ### Reference
 
-> [跨仓库全自动构建项目并部署到服务器](./docs/post.md)
+> [跨仓库全自动构建项目并部署到服务器](./docs/post-guide.md)
+>
 > [Yohaku 全流程部署实践记录](./docs/deployment-guide.md)
