@@ -289,15 +289,15 @@ jobs:
           cd "$workdir"
           unzip -qq -o "$workdir/release.zip"
           rm -r /tmp/yohaku
-          rm -rf "$workdir/.env"
-          ln -s "$basedir/.env" "$workdir/.env"
+          rm -rf "$workdir/${{ env.STANDALONE_SUBPATH }}/.env"
+          ln -s "$basedir/.env" "$workdir/${{ env.STANDALONE_SUBPATH }}/.env"
           export NEXT_SHARP_PATH=$(npm root -g)/sharp
           # https://github.com/Unitech/pm2/issues/3054
           # 将工作目录的 Node 入口文件软链接到基础目录
-          ln -sf "$workdir/server.js" "$basedir/server.js"
-          mkdir -p "$workdir/.next"
-          rm -rf "$workdir/.next/cache"
-          ln -sf "$basedir/.cache" "$workdir/.next/cache"
+          ln -sf "$workdir/${{ env.STANDALONE_SUBPATH }}/server.js" "$basedir/server.js"
+          mkdir -p "$workdir/${{ env.STANDALONE_SUBPATH }}/.next"
+          rm -rf "$workdir/${{ env.STANDALONE_SUBPATH }}/.next/cache"
+          ln -sf "$basedir/.cache" "$workdir/${{ env.STANDALONE_SUBPATH }}/.next/cache"
           cd "$basedir"
           if pm2 describe Yohaku >/dev/null 2>&1; then
             pm2 reload ecosystem.config.js --update-env
@@ -319,7 +319,7 @@ jobs:
               | awk '/^[0-9]+(_[0-9]{8}_[0-9]{6})?$/' \
               | sort -t_ -k1,1nr -k2,2r -k3,3r)
           fi
-          echo "SUSSCESS 部署成功"
+          echo "SUCCESS 部署成功"
           EOF
 
       # - name: After deploy script
@@ -355,6 +355,10 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
           git add -- "$HASH_FILE"
+          if git diff --cached --quiet; then
+            echo "Hash file unchanged, skip commit."
+            exit 0
+          fi
           git commit -a -m "Update hash file"
       - name: Push changes
         if: ${{ !env.ACT }}
